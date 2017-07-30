@@ -9,6 +9,7 @@ mkdir venvs
 source venvs/bin/activate
 pip install django
 pip install TwitterSearch
+pip install neo4django
 ```
 ## Requirements
 You need to have basics of
@@ -23,4 +24,4 @@ The project intend at first level to collect tweets from tag using TwitterSearch
    -  the number of retweets 
    -  the different replies
    -  the user with its localization
-  These values should be in **json** format 
+These values should be in **json** format 
