@@ -6,6 +6,7 @@ This is a sentiment analysis project on Twitter.
 cd twitter_django_app
 [sudo] pip install virtualenv
 mkdir venvs
+virtualenv venvs
 source venvs/bin/activate
 pip install django
 pip install TwitterSearch
