@@ -9,7 +9,7 @@ mkdir venvs
 virtualenv venvs
 source venvs/bin/activate
 pip install django
-pip install TwitterSearch
+pip install Twython
 pip install neo4django
 ```
 ## Requirements
