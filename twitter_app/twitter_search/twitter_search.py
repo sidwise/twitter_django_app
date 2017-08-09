@@ -1,5 +1,6 @@
 from twython import Twython
-import json
+# import json
+#
 
 TWITTER_APP_KEY = 'z0JO1aunGAWu0xgxtpOMiw2qx'  # supply the appropriate value
 TWITTER_APP_KEY_SECRET = '8vwUONvjOAfBcnNU9X1mtg9YJGPvDLjGZsZnbgs0CWhbOxYZDc'
@@ -22,27 +23,60 @@ for tweet in search:
     # print tweet
     # with open('data.txt', 'w') as outfile:
     #     json.dump(tweet, outfile)
-    # tweet description
-    print tweet['text'], '\n'
-    print tweet['retweet_count'], '\n'
-    print tweet['favorite_count']
 
+    # tweet description
+    tweet = {
+        'text': tweet['text'],
+        'retweet_count': tweet['retweet_count'],
+        'favorite_count': tweet['favourite_count'],
+        'created_at': tweet['created_at']
+    }
+    # print tweet['text'], '\n'
+    # print tweet['retweet_count'], '\n'
+    # print tweet['favorite_count']
+    # print tweet['created_at']
     print "################### mentions"
     # user mentions
+    mentions = []
     for user_t in tweet['entities']['user_mentions']:
         if tweet['user']['screen_name'] != user_t['screen_name']:
             user = t.show_user(screen_name=user_t['screen_name'])
-            print user['name']
-            print user['screen_name']
-            print user['location']
-            print user['favourites_count']
-            print user['followers_count']
-            print user['friends_count']
-            print user['lang']
-            print user['geo_enabled']
-            print user['description']
+            receiver = {
+                'name': user['name'],
+                'screen_name': user['screen_name'],
+                'location': user['location'],
+                'favourites_count': user['favourites_count'],
+                'followers_count': user['followers_count'],
+                'friends_count': user['friends_count'],
+                'lang': user['lang'],
+                'geo_enabled': user['geo_enabled'],
+                'description': user['description'],
+            }
+
+            # print user['name']
+            # print user['screen_name']
+            # print user['location']
+            # print user['favourites_count']
+            # print user['followers_count']
+            # print user['friends_count']
+            # print user['lang']
+            # print user['geo_enabled']
+            # print user['description']
+            mentions.append(receiver)
+
     print "################### user infor"
     # user info
+    sender = {
+        'name': tweet['user']['name'],
+        'screen_name': tweet['user']['screen_name'],
+        'location': tweet['user']['location'],
+        'favourites_count': tweet['user']['favourites_count'],
+        'followers_count': tweet['user']['followers_count'],
+        'friends_count': tweet['user']['friends_count'],
+        'lang': tweet['user']['lang'],
+        'geo_enabled': tweet['user']['geo_enabled'],
+        'description': tweet['user']['description'],
+    }
     print tweet['user']['name']
     print tweet['user']['screen_name']
     print tweet['user']['location']
@@ -68,34 +102,3 @@ for tweet in search:
         print status['text'], '\n'
         print status['retweet_count'], '\n'
         print status['favorite_count']
-
-    # import TwitterSearch as ts
-
-    # try:
-    #     tso = ts.TwitterSearchOrder()
-    #     # create a TwitterSearchOrder object
-    #     tso.set_keywords(['Trump'])
-    #     # let's define all words we would like to have a look for
-    #     tso.set_language('en')
-    #     # we want to see English tweets only
-    #     tso.set_include_entities(False)
-    #     # and don't give us all those entity information # it's about time to
-    #     # create a TwitterSearch object with our secret tokens
-    #     print "Tessstttttttt"
-    #     ts = ts.TwitterSearch(
-    #         consumer_key='z0JO1aunGAWu0xgxtpOMiw2qx',
-    #         consumer_secret='8vwUONvjOAfBcnNU9X1mtg9YJGPvDLjGZsZnbgs0CWhbOxYZDc',
-    #         access_token='3021210887-iKtdExGlsNC6JNGqsgKdSTgjaKVjyTDLMDLiXKM',
-    #         access_token_secret='GdeRJ504DoANMZqDuE02vO4XFPJcux4pUzzqTCa3Gg6Oj'
-    #     )
-
-    #     # this is where the fun actually starts :
-    #     for tweet in ts.search_tweets_iterable(tso):
-    #         print('@%s tweeted: %s' % (
-    #             tweet['user']['screen_name'],
-    #             tweet['text']))
-    #         # print tweet
-
-    # except ts.TwitterSearchException as e:
-    #     # take care of all those ugly errors if there are some
-    #     print(e)
