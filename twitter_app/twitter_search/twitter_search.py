@@ -1,13 +1,12 @@
+# -*- coding: utf-8 -*-
+
 import time
+import preprocess as pre
 from twython import Twython, TwythonRateLimitError
 from py2neo import authenticate, Graph  # , Node,  Relationship
 from py2neo.ogm import GraphObject, Property, RelatedTo
-
-
-from nltk.tokenize import RegexpTokenizer
-from nltk.corpus import stopwords
-from nltk.stem import WordNetLemmatizer
-
+from sentimentDic import sentiment_tweet
+import preprocessor as p
 # nltk.download('stopwords')
 # nltk.download('wordnet')
 
@@ -23,6 +22,9 @@ class Tweet(GraphObject):
     favorite_count = Property()
     created_at = Property()
     lemm = Property()
+    valence = Property()
+    arousal = Property()
+    emotion = Property()
 
     RETWEETS = RelatedTo("Tweet")
     REPLY_TO = RelatedTo("Tweet")
@@ -30,7 +32,7 @@ class Tweet(GraphObject):
     MENTIONS = RelatedTo("User")
     USING = RelatedTo("Source")
 
-#-------------------------------------------------------------------------
+# -------------------------------------------------------------------------
 
 
 class User(GraphObject):
@@ -50,7 +52,7 @@ class User(GraphObject):
 
     POSTS = RelatedTo("Tweet")
 
-#-------------------------------------------------------------------------
+# -------------------------------------------------------------------------
 
 
 class Hashtag(GraphObject):
@@ -60,7 +62,7 @@ class Hashtag(GraphObject):
 
     TAGS = RelatedTo("Tweet")
 
-#-------------------------------------------------------------------------
+# -------------------------------------------------------------------------
 
 
 class Source(GraphObject):
@@ -69,7 +71,7 @@ class Source(GraphObject):
 
     name = Property()
 
-#-------------------------------------------------------------------------
+# -------------------------------------------------------------------------
 
 
 class Url(GraphObject):
@@ -78,7 +80,7 @@ class Url(GraphObject):
     tweet_url = Property()
 
     # CONTAINS = RelatedTo("Tweet")
-#-------------------------------------------------------------------------
+# -------------------------------------------------------------------------
 
 # import json
 #
@@ -97,22 +99,12 @@ search = t.cursor(t.search, q='#java',
                   count=100, lang='en')
 
 
-def TweetLemm(twitter):
-    word_lemm = []
-    stop_words = set(stopwords.words("english"))
-    lemmatizer = WordNetLemmatizer()
-    tokenizer = RegexpTokenizer(r'\w+')
-    tokens = tokenizer.tokenize(twitter)
-    for token in tokens:
-        if token not in stop_words:
-            lemm = lemmatizer.lemmatize(token)
-            word_lemm.append(lemm)
-
-
 # count = 3
 graph = Graph("http://localhost:7474/db/data/")
+p.set_options(p.OPT.URL, p.OPT.EMOJI, p.OPT.SMILEY,
+              p.OPT.MENTION, p.OPT.NUMBER)
+
 i = 0
-# tweets = search['statuses']
 for tweet in search:
     try:
         i += 1
@@ -124,7 +116,11 @@ for tweet in search:
         t1.retweet_count = tweet['retweet_count']
         t1.favorite_count = tweet['favorite_count']
         t1.created_at = tweet['created_at']
-        t1.lemm = TweetLemm(tweet['text'])
+
+        t1.lemm = pre.preprocess_tweet(tweet['text'])
+        # print t1.lemm
+        sentiment_tweet(t1.lemm)
+
         for source in tweet['source']:
             s = Source()
             s.name = tweet['source']
@@ -133,15 +129,12 @@ for tweet in search:
 
         for url in tweet['entities']['urls']:
             ul = Url()
-            print url
             ul.tweet_url = url['url']
             graph.push(ul)
             t1.CONTAINS.add(ul)
 
         t1.RETWEETS.add(t1)
         t1.REPLY_TO.add(t1)
-        # t1.MENTIONS.add(u)
-        # t.CONTAINS.add(Link)
         graph.push(t1)
 
         for hashtag in tweet['entities']['hashtags']:
@@ -169,12 +162,6 @@ for tweet in search:
 
             graph.push(u)
 
-        # print tweet['text'], '\n'
-        # print tweet['retweet_count'], '\n'
-        # print tweet['favorite_count']
-
-        # print "################### mentions"
-        # user mentions
         mentions = []
         for user_t in tweet['entities']['user_mentions']:
             if tweet['user']['screen_name'] != user_t['screen_name']:
@@ -204,7 +191,7 @@ for tweet in search:
             t2.retweet_count = status['retweet_count']
             t2.favorite_count = status['favorite_count']
             t2.created_at = status['created_at']
-            t2.lemm = TweetLemm(status['text'])
+            t2.lemm = pre.preprocess_tweet(tweet['text'])
             # t2.RETWEETS.add(t1)
             t1.REPLY_TO.add(t2)
             graph.push(t2)
